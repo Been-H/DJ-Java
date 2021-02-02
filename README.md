@@ -1,4 +1,4 @@
-# DJ-Java
+# DJ-Java (still not sure why it's called this)
 A discord music bot in using Discord.py
 
 Why is it called DJ Java if it's in python? Good question. Don't ask. We don't know either.

@@ -73,4 +73,4 @@ async def on_message(message):
 client.add_listener(on_message)
 
 client.add_cog(MyCog(client))
-client.run("ODA1NjQwMzExOTg4Mjg5NTU3.YBd1Ag.lJ9peWERiDZKhs4Xo66kDm84guA")
+client.run(TOKEN)

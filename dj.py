@@ -2,14 +2,22 @@
 import discord
 from discord.ext import commands
 from random import randint
+
 import aiohttp
-from youtube_dl import YoutubeDL
+import youtube_dl
 import os
 
 # dotenv.load_dotenv()
 
 #setup
-audio_downloder = YoutubeDL({'format':'bestaudio'})
+ydl_opts = {
+    'format': 'bestaudio/best',
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec' : 'mp3',
+        'preferredquality': '192'
+    }]
+}
 client = commands.Bot(command_prefix=commands.when_mentioned_or("dj/"))
 
 #commands
@@ -26,13 +34,33 @@ class MyCog(commands.Cog):
             await ctx.send("No")
         else:
             await ctx.send("It's tails")
-    
+
     @commands.command()
-    async def play(self, ctx, *args):
-        voiceChannel = discord.utils.get(ctx.guild.voice_channels, name="Studying")
-        voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
-        await voiceChannel.connect()
-        [await ctx.send(arg) for arg in args]
+    async def play(self, ctx, arg):
+        song = os.path.isfile("song.mp3")
+        try:
+            if song:
+                os.remove("song.mp3")
+        except PermissionError:
+            await ctx.send("Wait for the current playing music to end or use the 'stop' command")
+
+        if ctx.author.voice is None or ctx.author.voice.channel == None:
+            await ctx.send("You don't appear to be in a channel. Join one and I'll play some music for you in there! :)")
+        else:
+
+            voice_channel = ctx.author.voice.channel
+            if ctx.voice_client is None:
+                vc = await voice_channel.connect()
+            else:
+                await ctx.voice_client.move_to(voice_channel)
+                vc = ctx.voice_client
+            voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([arg])
+            for file in os.listdir("./"):
+                if file.endswith(".mp3"):
+                    os.rename(file, "song.mp3")
+            voice.play(discord.FFmpegPCMAudio("song.mp3"))
 
 async def on_message(message):
     if message.author == client.user:
@@ -45,4 +73,4 @@ async def on_message(message):
 client.add_listener(on_message)
 
 client.add_cog(MyCog(client))
-client.run("ODA1NjQwMzExOTg4Mjg5NTU3.YBd1Ag.PEkzrvUFclI6i0IVgF1yr3UQ_eI")
+client.run("ODA1NjQwMzExOTg4Mjg5NTU3.YBd1Ag.lJ9peWERiDZKhs4Xo66kDm84guA")
